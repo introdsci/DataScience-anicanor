@@ -8,11 +8,11 @@ output:
 
 ## Abstract
 
-In under 250 words give a brief summary of the project so far.
+I've cleaned up and began to visualize possible things I could do whilst working on this given dataset https://www.kaggle.com/rush4ratio/video-game-sales-with-ratings/
 
 ### 1. Discovery and Data Preparation
 
-Provide a one-sentence introduction with what is covered by the first deliverable along with a link to another html page that gives the details.
+Here I've introduced, cleaned up, and summarized the data I've chosen. https://introdsci.github.io/DataScience-anicanor/
 
 ### 2. Model Planning and Building
 
