@@ -1,5 +1,5 @@
 ---
-title: "Anaysis of Game Sales"
+title: "Analysis of Game Sales"
 subtitle: "Aaron Nicanor's Data Science Portfolio"
 output:
   html_document:
