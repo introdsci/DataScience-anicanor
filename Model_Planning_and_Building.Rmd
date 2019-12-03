@@ -1,0 +1,294 @@
+---
+title: "Model Planning and Building"
+subtitle: "Aaron Nicanor's Data Science Portfolio Project"
+output:
+  html_document:
+    df_print: paged
+---
+### Introduction
+In this part of the project, I'd like to see what are the possible predictors of a games sales. This is important information since it'll give pointers towards developers on what they could do to sell to a larger audience, and it'll provide insight on what made a game sell well.
+
+To supplement my data, I've included a web scrape from the site vgchartz. This site provides information about console sales, and will act as an addition predictor.
+
+### Libraries and Resources
+First, I'll have to load in the libraries I'll be using in addition to what I've done in the previous part of this project.
+
+```{r}
+suppressMessages(library("tidyverse"))
+suppressMessages(library("knitr"))
+suppressMessages(library("caret"))
+suppressMessages(library("rvest"))
+suppressMessages(library("stringr"))
+purl("Discovery_And_DataPrep.Rmd", output = "part1.r")
+source("part1.r")
+```
+
+I'll also need to load in my supplementary data.
+```{r}
+#Yoink the URL
+URL_ConsoleSales <- "http://www.vgchartz.com/analysis/platform_totals/Hardware/Global/"
+html <- read_html(URL_ConsoleSales)
+
+#Pinning down the rows that I'll be scrapping from
+rows <- html %>% html_nodes(xpath = '//*[@id="myTable"]/tbody/tr')
+
+#Grabbing all observations I need
+Platform <- rows %>%
+  html_nodes(xpath = '//*[@id="myTable"]/tbody/tr/td[2]') %>%
+  html_text()
+NA_Sales <- rows %>%
+  html_nodes(xpath = '//*[@id="myTable"]/tbody/tr/td[3]') %>%
+  html_text()
+EU_Sales <- rows %>%
+  html_nodes(xpath = '//*[@id="myTable"]/tbody/tr/td[4]') %>%
+  html_text()
+JP_Sales <- rows %>%
+  html_nodes(xpath = '//*[@id="myTable"]/tbody/tr/td[5]') %>%
+  html_text()
+Other_Sales <- rows %>%
+  html_nodes(xpath = '//*[@id="myTable"]/tbody/tr/td[6]') %>%
+  html_text()
+Global_Sales <- rows %>%
+  html_nodes(xpath = '//*[@id="myTable"]/tbody/tr/td[7]') %>%
+  html_text()
+
+#Create a tibble of my newly aquired data
+ConsoleSalesData <- tibble(Platform=Platform,
+                           'NA Console Sales'=NA_Sales,
+                           'EU Console Sales'=EU_Sales,
+                           'JP Console Sales'=JP_Sales,
+                           'Other Console Sales'=Other_Sales,
+                           'Global Console Sales'=Global_Sales)
+```
+
+### Data Organization
+I'll need to reorganize my supplementary data so that it's tidy and clean
+```{r}
+#Here, I convert each column into its appropriate type
+ConsoleSalesData[2] <- ConsoleSalesData$`NA Console Sales` %>% as.numeric()
+ConsoleSalesData[3] <- ConsoleSalesData$`EU Console Sales` %>% as.numeric()
+ConsoleSalesData[4] <- ConsoleSalesData$`JP Console Sales` %>% as.numeric()
+ConsoleSalesData[5] <- ConsoleSalesData$`Other Console Sales` %>% as.numeric()
+ConsoleSalesData[6] <- ConsoleSalesData$`Global Console Sales` %>% as.numeric()
+
+#This absolute monster of a code chunk is just me converting the names of each console into something that matches the naming convention used in part 1 of this project.
+ConsoleSalesData$Platform[ConsoleSalesData$Platform=='3DO Interactive Multiplayer (3DO)'] <- '3DO'
+ConsoleSalesData$Platform[ConsoleSalesData$Platform=='Atari 2600 (2600)'] <- '2600'
+ConsoleSalesData$Platform[ConsoleSalesData$Platform=='Atari 7800 (7800)'] <- '7800'
+ConsoleSalesData$Platform[ConsoleSalesData$Platform=='Dreamcast (DC)'] <- 'DC'
+ConsoleSalesData$Platform[ConsoleSalesData$Platform=='Game Boy (GB)'] <- 'GB'
+ConsoleSalesData$Platform[ConsoleSalesData$Platform=='Game Boy Advance (GBA)'] <- 'GBA'
+ConsoleSalesData$Platform[ConsoleSalesData$Platform=='GameCube (GC)'] <- 'GC'
+ConsoleSalesData$Platform[ConsoleSalesData$Platform=='GameGear (GG)'] <- 'GG'
+ConsoleSalesData$Platform[ConsoleSalesData$Platform=='iOS (iOS)'] <- 'iOS'
+ConsoleSalesData$Platform[ConsoleSalesData$Platform=='Microsoft Windows (PC)'] <- 'PC'
+ConsoleSalesData$Platform[ConsoleSalesData$Platform=='Neo Geo (NG)'] <- 'NG'
+ConsoleSalesData$Platform[ConsoleSalesData$Platform=='Nintendo 3DS (3DS)'] <- '3DS'
+ConsoleSalesData$Platform[ConsoleSalesData$Platform=='Nintendo 64 (N64)'] <- 'N64'
+ConsoleSalesData$Platform[ConsoleSalesData$Platform=='Nintendo DS (DS)'] <- 'DS'
+ConsoleSalesData$Platform[ConsoleSalesData$Platform=='Nintendo Entertainment System (NES)'] <- 'NES'
+ConsoleSalesData$Platform[ConsoleSalesData$Platform=='Nintendo Switch (NS)'] <- 'NS'
+ConsoleSalesData$Platform[ConsoleSalesData$Platform=='PC-FX (PCFX)'] <- 'PCFX'
+ConsoleSalesData$Platform[ConsoleSalesData$Platform=='PlayStation (PS)'] <- 'PS'
+ConsoleSalesData$Platform[ConsoleSalesData$Platform=='PlayStation 2 (PS2)'] <- 'PS2'
+ConsoleSalesData$Platform[ConsoleSalesData$Platform=='PlayStation 3 (PS3)'] <- 'PS3'
+ConsoleSalesData$Platform[ConsoleSalesData$Platform=='PlayStation 4 (PS4)'] <- 'PS4'
+ConsoleSalesData$Platform[ConsoleSalesData$Platform=='PlayStation Portable (PSP)'] <- 'PSP'
+ConsoleSalesData$Platform[ConsoleSalesData$Platform=='PlayStation Vita (PSV)'] <- 'PSV'
+ConsoleSalesData$Platform[ConsoleSalesData$Platform=='Sega CD (SCD)'] <- 'SCD'
+ConsoleSalesData$Platform[ConsoleSalesData$Platform=='Sega Genesis (GEN)'] <- 'GEN'
+ConsoleSalesData$Platform[ConsoleSalesData$Platform=='Sega Saturn (SAT)'] <- 'SAT'
+ConsoleSalesData$Platform[ConsoleSalesData$Platform=='Super Nintendo Entertainment System (SNES)'] <- 'SNES'
+ConsoleSalesData$Platform[ConsoleSalesData$Platform=='TurboGrafx-16 (TG16)'] <- 'TG16'
+ConsoleSalesData$Platform[ConsoleSalesData$Platform=='Wii (Wii)'] <- 'Wii'
+ConsoleSalesData$Platform[ConsoleSalesData$Platform=='Wii U (WiiU)'] <- 'WiiU'
+ConsoleSalesData$Platform[ConsoleSalesData$Platform=='WonderSwan (WS)'] <- 'WS'
+ConsoleSalesData$Platform[ConsoleSalesData$Platform=='Xbox (XB)'] <- 'XB'
+ConsoleSalesData$Platform[ConsoleSalesData$Platform=='Xbox 360 (X360)'] <- 'X360'
+ConsoleSalesData$Platform[ConsoleSalesData$Platform=='Xbox One (XOne)'] <- 'XOne'
+
+#I convert the Platform column into a tibble
+ConsoleSalesData$Platform <- as.factor(ConsoleSalesData$Platform)
+
+#I removed these rows from my data since the data they provided was NULL.
+ConsoleSalesData <- ConsoleSalesData[-c(28:34),]
+
+#With all that done, I can show off the final table
+ConsoleSalesData
+```
+
+### Appending Data and Modelling Phase Prep
+Now that I have my supplementary data in a tidy form, I'll just append all that I've got onto my preexisting tables from the previous part. This way I can analyse data by significant regions/globally. In addition, I make some changes so that I can easily form my models.
+```{r}
+#Seperating console sales into NA, EU, JP, and Global just like in part 1
+ConsoleDataNA <- tibble(Platform=ConsoleSalesData$Platform,
+                        `NA Console Sales`=ConsoleSalesData$`NA Console Sales`)
+ConsoleDataEU <- tibble(Platform=ConsoleSalesData$Platform,
+                        `EU Console Sales`=ConsoleSalesData$`EU Console Sales`)
+ConsoleDataJP <- tibble(Platform=ConsoleSalesData$Platform,
+                        `JP Console Sales`=ConsoleSalesData$`JP Console Sales`)
+ConsoleDataGlobal <- tibble(Platform=ConsoleSalesData$Platform,
+                        `Global Console Sales`=ConsoleSalesData$`Global Console Sales`)
+
+#Adding console sales to the each of the tables I had made back in part 1
+UserBasedDataNA <- left_join(UserBasedDataNA, ConsoleDataNA, by = "Platform")
+UserBasedDataEU <- left_join(UserBasedDataEU, ConsoleDataEU, by = "Platform")
+UserBasedDataJP <- left_join(UserBasedDataJP, ConsoleDataJP, by = "Platform")
+UserBasedDataGlobal <- left_join(UserBasedDataGlobal, ConsoleDataGlobal, by = "Platform")
+CriticBasedDataNA <- left_join(CriticBasedDataNA, ConsoleDataNA, by = "Platform")
+CriticBasedDataEU <- left_join(CriticBasedDataEU, ConsoleDataEU, by = "Platform")
+CriticBasedDataJP <- left_join(CriticBasedDataJP, ConsoleDataJP, by = "Platform")
+CriticBasedDataGlobal <- left_join(CriticBasedDataGlobal, ConsoleDataGlobal, by = "Platform")
+
+#Replacing all spaces with an underscore, since it'll make things more convinient during the modeling phase
+names(UserBasedDataNA) <- gsub(x = names(UserBasedDataNA), pattern = " ", replacement = "\\_")
+names(UserBasedDataEU) <- gsub(x = names(UserBasedDataEU), pattern = " ", replacement = "\\_")
+names(UserBasedDataJP) <- gsub(x = names(UserBasedDataJP), pattern = " ", replacement = "\\_")
+names(UserBasedDataGlobal) <- gsub(x = names(UserBasedDataGlobal), pattern = " ", replacement = "\\_")
+names(CriticBasedDataNA) <- gsub(x = names(CriticBasedDataNA), pattern = " ", replacement = "\\_")
+names(CriticBasedDataEU) <- gsub(x = names(CriticBasedDataEU), pattern = " ", replacement = "\\_")
+names(CriticBasedDataJP) <- gsub(x = names(CriticBasedDataJP), pattern = " ", replacement = "\\_")
+names(CriticBasedDataGlobal) <- gsub(x = names(CriticBasedDataGlobal), pattern = " ", replacement = "\\_")
+
+#Convert the scores to doubles so that I can properly analyse them in the model
+UserBasedDataNA$User_Score <- as.double(UserBasedDataNA$User_Score)
+UserBasedDataEU$User_Score <- as.double(UserBasedDataEU$User_Score)
+UserBasedDataJP$User_Score <- as.double(UserBasedDataJP$User_Score)
+UserBasedDataGlobal$User_Score <- as.double(UserBasedDataGlobal$User_Score)
+CriticBasedDataNA$Critic_Score <- as.double(CriticBasedDataNA$Critic_Score)
+CriticBasedDataEU$Critic_Score <- as.double(CriticBasedDataEU$Critic_Score)
+CriticBasedDataJP$Critic_Score <- as.double(CriticBasedDataJP$Critic_Score)
+CriticBasedDataGlobal$Critic_Score <- as.double(CriticBasedDataGlobal$Critic_Score)
+
+#I'll also be creating tables where it has both User and Critic scores. These tables will be used for my visual models.
+cols <- c(1,9:10)
+DataNA <- left_join(UserBasedDataNA, CriticBasedDataNA[,cols], by = "Title")
+DataEU <- left_join(UserBasedDataEU, CriticBasedDataEU[,cols], by = "Title")
+DataJP <- left_join(UserBasedDataJP, CriticBasedDataJP[,cols], by = "Title")
+DataGlobal <- left_join(UserBasedDataGlobal, CriticBasedDataGlobal[,cols], by = "Title")
+```
+
+### Modeling Data
+Now I'll begin to visualize models of game sales based on the console sales within that region and the review scores. I've created multiple models to view each significant region in addition to a model dedicated to global sales.
+
+I've also done additional models which look to see how ESRB ratings affect a game's sales. These Models are not visualized both for the sake of brevity, and because I believe the results shown are a fine enough indicator. This is more for my own curiousity.
+
+#### North America
+```{r}
+#Randomly pick 75% of the data to split.
+index <- DataNA$NA_Sales %>% createDataPartition(p = 0.75, list = FALSE)
+
+train <-DataNA[index, ]
+test <-DataNA[-index,]
+
+train_model <- lm(train, formula=NA_Sales~NA_Console_Sales+User_Score+Critic_Score)
+summary(train_model)
+
+predictions <- train_model %>% predict(test)
+
+ggplot(data = test, aes(x=predictions, y = NA_Sales)) + geom_point(alpha=1/5) + scale_x_continuous(name = "Console Sales and Review Scores") + scale_y_continuous(name = "North America Sales") + geom_smooth(method = "lm")
+```
+
+Model with ESRB ratings included.
+```{r}
+#User Reviews Model
+UserModelNA <- lm(UserBasedDataNA, formula=NA_Sales~Rating)
+summary(UserModelNA)
+```
+```{r}
+#Critic Reviews Model
+CriticModelNA <- lm(CriticBasedDataNA, formula=NA_Sales~Rating)
+summary(CriticModelNA)
+```
+
+#### Europe
+```{r}
+#Randomly pick 75% of the data to split.
+index <- DataEU$EU_Sales %>% createDataPartition(p = 0.75, list = FALSE)
+
+train <-DataEU[index, ]
+test <-DataEU[-index,]
+
+train_model <- lm(train, formula=EU_Sales~EU_Console_Sales+User_Score+Critic_Score)
+summary(train_model)
+
+predictions <- train_model %>% predict(test)
+
+ggplot(data = test, aes(x=predictions, y = EU_Sales)) + geom_point(alpha=1/5) + scale_x_continuous(name = "Console Sales and Review Scores") + scale_y_continuous(name = "Europe Sales") + geom_smooth(method = "lm")
+```
+
+Model with ESRB ratings included.
+```{r}
+#User Reviews Model
+UserModelEU <- lm(UserBasedDataEU, formula=EU_Sales~Rating)
+summary(UserModelEU)
+```
+```{r}
+#Critic Reviews Model
+CriticModelEU <- lm(CriticBasedDataEU, formula=EU_Sales~Rating)
+summary(CriticModelEU)
+```
+
+#### Japan
+```{r}
+#Randomly pick 75% of the data to split.
+index <- DataJP$JP_Sales %>% createDataPartition(p = 0.75, list = FALSE)
+
+train <-DataJP[index, ]
+test <-DataJP[-index,]
+
+train_model <- lm(train, formula=JP_Sales~JP_Console_Sales+User_Score+Critic_Score)
+summary(train_model)
+
+predictions <- train_model %>% predict(test)
+
+ggplot(data = test, aes(x=predictions, y = JP_Sales)) + geom_point(alpha=1/5) + scale_x_continuous(name = "Console Sales and Review Scores") + scale_y_continuous(name = "Japan Sales") + geom_smooth(method = "lm")
+```
+
+Model with ESRB ratings included.
+```{r}
+#User Reviews Model
+UserModelJP <- lm(UserBasedDataJP, formula=JP_Sales~Rating)
+summary(UserModelJP)
+```
+```{r}
+#Critic Reviews Model
+CriticModelJP <- lm(CriticBasedDataJP, formula=JP_Sales~Rating)
+summary(CriticModelJP)
+```
+
+#### Global
+```{r}
+#Randomly pick 75% of the data to split.
+index <- DataGlobal$Global_Sales %>% createDataPartition(p = 0.75, list = FALSE)
+
+train <-DataGlobal[index, ]
+test <-DataGlobal[-index,]
+
+train_model <- lm(train, formula=Global_Sales~Global_Console_Sales+User_Score+Critic_Score)
+summary(train_model)
+
+predictions <- train_model %>% predict(test)
+
+ggplot(data = test, aes(x=predictions, y = Global_Sales)) + geom_point(alpha=1/5) + scale_x_continuous(name = "Console Sales and Review Scores") + scale_y_continuous(name = "Global Sales") + geom_smooth(method = "lm")
+```
+
+Model with ESRB ratings included.
+```{r}
+#User Reviews Model
+UserModelGlobal <- lm(UserBasedDataGlobal, formula=Global_Sales~Rating)
+summary(UserModelGlobal)
+```
+```{r}
+#Critic Reviews Model
+CriticModelGlobal <- lm(CriticBasedDataGlobal, formula=Global_Sales~Rating)
+summary(CriticModelGlobal)
+```
+
+### Model Results
+As I can see from the results of my models, it appears that, individually, a game's user and critic reviews along with its platform's sales numbers are all significant, but the correlation between the three and a game's sales is somewhat average. 
+
+This could possibly be because there's generally a larger quantity of poorly sold games than there are average to top selling games. What could likely increase correlation would be to limit my selection to only the highest/average grossing games. Other limitations that these models could have were the fact that a number of observations within my data in Part 1 didn't receive a console sales column from the supplementary data. That was because the site I scrapped from didn't provide a sales figure for some of the consoles that were observed, and, as a result, they were cut from the model. 
+
+In addition to those findings however, I could see from my additional models looking at the ESRB ratings that Rated M and Rated E games have a stronger significance toward game sales. 
+

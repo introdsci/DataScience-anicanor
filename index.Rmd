@@ -12,11 +12,13 @@ I've cleaned up and began to visualize possible things I could do whilst working
 
 ### 1. Discovery and Data Preparation
 
-Here I've introduced, cleaned up, and summarized the data I've chosen. https://introdsci.github.io/DataScience-anicanor/
+Here I've introduced, cleaned up, and summarized the data I've chosen.
+https://anicanor.github.io/PortfolioPart1/
 
 ### 2. Model Planning and Building
 
-Coming soon...
+In this part, I add in console sales into my data and use that along with other variables to predict game sales.
+https://anicanor.github.io/PortfolioPart2/
 
 ### 3. Results and Operationalization
 
