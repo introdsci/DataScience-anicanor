@@ -8,7 +8,7 @@ output:
 
 ## Abstract
 
-I've cleaned up and began to visualize possible things I could do whilst working on this given dataset https://www.kaggle.com/rush4ratio/video-game-sales-with-ratings/and  http://www.vgchartz.com/analysis/platform_totals/Hardware/Global/. I've created models based on important sales regions to see what will help a game's sales.
+I've cleaned up and began to visualize possible things I could do whilst working on this given dataset https://www.kaggle.com/rush4ratio/video-game-sales-with-ratings/ and  http://www.vgchartz.com/analysis/platform_totals/Hardware/Global/. I've created models based on important sales regions to see what will help a game's sales.
 
 ### 1. Discovery and Data Preparation
 
