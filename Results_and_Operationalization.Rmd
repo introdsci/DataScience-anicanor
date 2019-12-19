@@ -1,0 +1,140 @@
+---
+title: "Results and Operationalization"
+subtitle: Aaron Nicanor's Data Science Portfolio Project
+output:
+  pdf_document: default
+  html_document:
+    df_print: paged
+---
+### Introduction
+Finally, in this part of the project I'll document any previous revisions I've made to my project alongside the possible applications this data can be used for.
+
+First, as always, I'll have to load in my libraries and any previous work that I've done before.
+```{r}
+suppressMessages(library("tidyverse"))
+suppressMessages(library("knitr"))
+suppressMessages(library("caret"))
+suppressMessages(library("rvest"))
+suppressMessages(library("stringr"))
+#purl("Discovery_And_DataPrep.Rmd", output = "part1.r")
+source("part1.r")
+#purl("Model_Planning_and_Building.Rmd", output = "part2.r")
+source("part2.r")
+```
+
+### Revisions
+After the completion of the previous two parts, I've received a few critiques on how I can improve my work. Here I'll document all the changes I thought worth changing (The original versions of Part 1 and Part 2 can still be found in this github repo. The revised versions can be found in the github page for this project).
+
+#### Part 1
+I had adjusted my code from lines 191-218 so that I won't be creating redundant tibbles. This was fixed thanks to a suggestion from a peer. They also mentioned that I could've included all region sales into one tibble instead of splitting them into multiple tibbles, and they've also suggested that I supplement any missing review scores with web scrapes from another site. I chose not to change either for the following reasons. The former suggestion I chose not to do because I believed separate tibbles allowed me to easily use certain display functions on any region of my choosing, and, in addition, the separate tibbles came in handy in the next part where I chose to create models on each region. The former suggestion was a fine idea, but after searching though some of the variables with missing review scores, a lot of them came from very outdated games which lack a web documented review score. While I could likely track any critic reviews given to the older games on old game magazines, there was still the issue of missing a user review score. In the end, I chose not to include this suggestion.
+
+One other change I made on my own was to better explain my intentions for this project back in the introduction section.
+
+#### Part 2
+The peer that had critiqued my project had mentioned that I could've explained my models better after displaying them. To fix this, I thought the cross-validation that I'd do later in this part would help aid in explaining those previously made models. That said, I've also included additional explanations on both my ESRB models and the initial models. They also mentioned that I should've talked about what I could do with the information shown in that part, but I believed that my introduction matched pretty well with most things you could do with this data.
+
+### Cross-validation
+In order to better illustrate what my models are telling us, I'll be using cross-validation on each regions'  Game Sales v Console Sales and Review Scores model.
+
+As a guide to help read the data that I'll extract from this cross-validation...
+- **R2**: Represents the strength of the correlation. 1 is a stronger correlation.
+- **Root Mean Squared Error (RMSE)**: Represents the average difference between the observed known outcome values and the values predicted by the model. The lower the RMSE, the better the model.
+- **Mean absolute error (MAE)**:  Represents how big an error we can expect. Smaller numbers means higher accuracy.
+
+#### North America
+NA Sales v. NA Console Sales and Review Scores 
+```{r}
+#I can't do cross-validation with any missing data within the tibble,
+#so I had to remove any empty spaces left in by console sales.
+CV_DataNA <- DataNA[rowSums(is.na(DataNA[ , ])) == 0, ]
+index <- CV_DataNA$NA_Sales %>% createDataPartition(p = 0.75, list = FALSE)
+
+train <- CV_DataNA[index, ]
+test <- CV_DataNA[-index,]
+
+train_model <- lm(train, formula=NA_Sales~NA_Console_Sales+User_Score+Critic_Score)
+summary(train_model)
+
+predictions <- train_model %>% predict(test) 
+
+CV <- data.frame( R2 = R2(predictions, test$NA_Sales),
+            RMSE = RMSE(predictions, test$NA_Sales),
+            MAE = MAE(predictions, test$NA_Sales))
+CV
+```
+
+#### Europe
+EU Sales v. EU Console Sales and Review Scores 
+```{r}
+#I can't do cross-validation with any missing data within the tibble,
+#so I had to remove any empty spaces left in by console sales.
+CV_DataEU <- DataEU[rowSums(is.na(DataEU[ , ])) == 0, ]
+index <- CV_DataEU$EU_Sales %>% createDataPartition(p = 0.75, list = FALSE)
+
+train <- CV_DataEU[index, ]
+test <- CV_DataEU[-index,]
+
+train_model <- lm(train, formula=EU_Sales~EU_Console_Sales+User_Score+Critic_Score)
+summary(train_model)
+
+predictions <- train_model %>% predict(test) 
+
+CV <- data.frame( R2 = R2(predictions, test$EU_Sales),
+            RMSE = RMSE(predictions, test$EU_Sales),
+            MAE = MAE(predictions, test$EU_Sales))
+CV
+```
+
+#### Japan
+JP Sales v. JP Console Sales and Review Scores 
+```{r}
+#I can't do cross-validation with any missing data within the tibble,
+#so I had to remove any empty spaces left in by console sales.
+CV_DataJP <- DataJP[rowSums(is.na(DataJP[ , ])) == 0, ]
+index <- CV_DataJP$JP_Sales %>% createDataPartition(p = 0.75, list = FALSE)
+
+train <- CV_DataJP[index, ]
+test <- CV_DataJP[-index,]
+
+train_model <- lm(train, formula=JP_Sales~JP_Console_Sales+User_Score+Critic_Score)
+summary(train_model)
+
+predictions <- train_model %>% predict(test) 
+
+CV <- data.frame( R2 = R2(predictions, test$JP_Sales),
+            RMSE = RMSE(predictions, test$JP_Sales),
+            MAE = MAE(predictions, test$JP_Sales))
+CV
+```
+
+#### Global
+Global Sales v. Global Console Sales and Review Scores 
+```{r}
+#I can't do cross-validation with any missing data within the tibble,
+#so I had to remove any empty spaces left in by console sales.
+CV_DataGlobal <- DataGlobal[rowSums(is.na(DataGlobal[ , ])) == 0, ]
+index <- CV_DataGlobal$Global_Sales %>% createDataPartition(p = 0.75, list = FALSE)
+
+train <- CV_DataGlobal[index, ]
+test <- CV_DataGlobal[-index,]
+
+train_model <- lm(train, formula=Global_Sales~Global_Console_Sales+User_Score+Critic_Score)
+summary(train_model)
+
+predictions <- train_model %>% predict(test) 
+
+CV <- data.frame( R2 = R2(predictions, test$Global_Sales),
+            RMSE = RMSE(predictions, test$Global_Sales),
+            MAE = MAE(predictions, test$Global_Sales))
+CV
+```
+
+#### Results
+Through cross-validation, I can see that, while individually console sales and review scores hold a high correlation with game sales, when factored together the correlation seems to drop. The strongest prediction I had was found within North America's model. In addition, based off of the RMSE and MAE, each of the models seems to be decent and are highly accurate. As discussed in the part prior, this drop is likely caused by the fact that there are more poorly sold games than top selling games.
+
+However, with regards to what I've learned throughout this project, it appears that mostly everywhere but Japan has a thriving market for Rated M games. Japan generally has sold more games when they were aimed towards younger audiences. In addition, console sales and review scores of both the critics and users contribute greatly towards a game's sales.
+
+### Operationalization
+As I said in my first introduction to this project, I aimed to work with this data so that I could see what helps a game sell. Based on the work I've done, I can generally see what types of games do well in what region. With this data, it can aid developers to push towards a certain market to maximize their potential to have a game sell well. This sentiment applies to both indie and big studio devs.
+
+With regards to what I think are the ethical issues this could bring, I personally always believed game development to be a strong form of self expression. This highly logical approach to game development I feel could easily take away from that aspect of game development. While, at the end of the day, a game is a product, I believe it's equally important to maintain games as a medium of developer self expression.
