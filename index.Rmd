@@ -22,6 +22,6 @@ https://anicanor.github.io/PortfolioPart2/
 
 ### 3. Results and Operationalization
 
-Here, I go over any revisions I've made on my project, and I preform cross validation on each of my regional models. In addition, I go over any ways I can operationalize this project.
+Here, I go over any revisions I've made on my project, and I preform cross validation on each of my regional models. In addition, I go over any ways I can operationalize this project along with any unintended consquences and future goals for this project.
 https://anicanor.github.io/PortfolioPart3/
 
