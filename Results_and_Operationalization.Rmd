@@ -2,9 +2,9 @@
 title: "Results and Operationalization"
 subtitle: Aaron Nicanor's Data Science Portfolio Project
 output:
-  pdf_document: default
   html_document:
     df_print: paged
+  pdf_document: default
 ---
 ### Introduction
 Finally, in this part of the project I'll document any previous revisions I've made to my project alongside the possible applications this data can be used for.
@@ -137,4 +137,11 @@ However, with regards to what I've learned throughout this project, it appears t
 ### Operationalization
 As I said in my first introduction to this project, I aimed to work with this data so that I could see what helps a game sell. Based on the work I've done, I can generally see what types of games do well in what region. With this data, it can aid developers to push towards a certain market to maximize their potential to have a game sell well. This sentiment applies to both indie and big studio devs.
 
+### Unintended Consequences
 With regards to what I think are the ethical issues this could bring, I personally always believed game development to be a strong form of self expression. This highly logical approach to game development I feel could easily take away from that aspect of game development. While, at the end of the day, a game is a product, I believe it's equally important to maintain games as a medium of developer self expression.
+
+*Everything below was based on suggestions given by my peer during the final*
+In addition, another issue that could arise is providing a stronger incentive for a region's developer to focus on aiming at a certain audience to maximize their sales. A more specific example can be if North American developers focus too much on the Rated M market and there's a drop in content aimed towards kids. The opposite could also be said about the Japanese market where games are further aimed towards children but not adults.
+
+### Going Forward
+While my results can easily help a big game development team, I believe these kinds of observations would be better suited for indie developers. Analysing what could boost the sales of indie games I think would be more valuable information than what I've covered here. As a result, observing indie games as opposed to AAA games might be something I could aim for in the future.
